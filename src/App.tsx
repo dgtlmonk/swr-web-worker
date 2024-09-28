@@ -49,10 +49,10 @@ const App: React.FC = () => {
     getDataFromDB()
       .then((cachedData: DataItem[]) => {
         const now = Date.now();
-        const isCachedDataStale = now - cachedData[0]?.timestamp < CACHE_THRESHOLD
+        const isCacheable= now - cachedData[0]?.timestamp < CACHE_THRESHOLD
 
         // Step 2: Check if cached data is fresh (less than 5 seconds old)
-        if (cachedData.length > 0 && isCachedDataStale ) {
+        if (cachedData.length > 0 && isCacheable ) {
           setData(cachedData);
           setLoading(() => false);
         } else {
