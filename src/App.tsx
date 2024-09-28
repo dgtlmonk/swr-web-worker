@@ -26,6 +26,8 @@ const App: React.FC = () => {
     worker.onmessage = (event: MessageEvent<DataItem[]>) => {
       const freshData = event.data;
 
+      console.log('freshData ', freshData)
+
       // Update IndexedDB with fresh data and update the timestamp
       const dataWithTimestamp = freshData.map((item) => ({
         ...item,
@@ -47,9 +49,10 @@ const App: React.FC = () => {
     getDataFromDB()
       .then((cachedData: DataItem[]) => {
         const now = Date.now();
+        const isCachedDataStale = now - cachedData[0]?.timestamp < CACHE_THRESHOLD
 
         // Step 2: Check if cached data is fresh (less than 5 seconds old)
-        if (cachedData.length > 0 && now - cachedData[0].timestamp < CACHE_THRESHOLD) {
+        if (cachedData.length > 0 && isCachedDataStale ) {
           setData(cachedData);
           setLoading(() => false);
         } else {
@@ -59,7 +62,7 @@ const App: React.FC = () => {
       })
       .catch((error) => {
         console.error("Failed to get data from IndexedDB", error);
-      });
+      })
 
     // Step 3: Set up the revalidation interval every 30 seconds
     const interval = setInterval(() => {
