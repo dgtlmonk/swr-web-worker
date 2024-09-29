@@ -1,9 +1,9 @@
 
 // indexedDB.js
 const DB_NAME = "dgtlmonk";
-const STORE_NAME = "usersStore";
-const OLD_STORE_NAME = "testStore";
-const DB_VERSION = 3; 
+const STORE_NAME = "usersStore_v8";
+const OLD_STORE_NAME = "usersStore_v7";
+const DB_VERSION = 8; 
 
 export function openDB() {
   console.log('opening db...');
@@ -15,26 +15,44 @@ export function openDB() {
        console.log("Upgrade needed event triggered");
       const db = event.target.result;
 
-      // Check if the old object store exists, and rename it by copying data
-      if (db.objectStoreNames.contains(OLD_STORE_NAME)) {
-        const oldStore = db.transaction(OLD_STORE_NAME, "readwrite").objectStore(OLD_STORE_NAME);
-        const newStore = db.createObjectStore(STORE_NAME, { keyPath: "id" });
-
-        // Copy data from the old store to the new one
-        oldStore.openCursor().onsuccess = function (event) {
-          const cursor = event.target.result;
-          if (cursor) {
-            newStore.put(cursor.value); // Add data to the new store
-            cursor.continue();
-          } else {
-            // Once copying is done, delete the old store
-            db.deleteObjectStore(OLD_STORE_NAME);
-          }
-        };
-      } else if (!db.objectStoreNames.contains(STORE_NAME)) {
-        // If the new store doesn't already exist, create it
+       if (!db.objectStoreNames.contains(STORE_NAME)) {
         db.createObjectStore(STORE_NAME, { keyPath: "id" });
+        console.log("Object store created");
       }
+
+      if (db.objectStoreNames.contains(OLD_STORE_NAME)) {
+        
+       db.deleteObjectStore(OLD_STORE_NAME);
+        // console.log("Old store found, starting migration...");
+        // const transaction = event.target.transaction;
+        // const oldStore = transaction.objectStore(OLD_STORE_NAME);
+        //
+        // // Create the new store
+        // const newStore = db.createObjectStore(STORE_NAME, { keyPath: "id" });
+        //
+        // // Copy data from the old store
+        // oldStore.openCursor().onsuccess = function (event) {
+        //   const cursor = event.target.result;
+        //   if (cursor) {
+        //     console.log("Copying record:", cursor.value);
+        //     const putRequest = newStore.put(cursor.value);
+        //     putRequest.onsuccess = function () {
+        //       console.log("Record successfully copied");
+        //     };
+        //     putRequest.onerror = function () {
+        //       console.error("Error copying record:", putRequest.error);
+        //     };
+        //     cursor.continue();
+        //   } else {
+        //     console.log("Migration completed, deleting old store");
+        //     db.deleteObjectStore(OLD_STORE_NAME);
+        //   }
+        // };
+
+        
+      }
+
+      
     };
 
     request.onsuccess = function (event) {
